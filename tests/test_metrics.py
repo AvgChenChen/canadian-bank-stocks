@@ -99,3 +99,10 @@ def test_rate_cycles_group_moves_in_the_same_direction():
 def test_return_over_compounds_the_months_in_the_window():
     returns = pd.Series([0.5, 0.10, 0.10, 0.5], index=months("2022-01", 4))
     assert m.return_over(returns, pd.Period("2022-02", "M"), pd.Period("2022-03", "M")) == pytest.approx(0.21)
+
+
+@pytest.mark.parametrize("calculate", [m.growth_of, m.annualised, m.compounded])
+def test_empty_monthly_returns_raise_a_clear_error(calculate):
+    empty = pd.Series(dtype="float64", index=months("2020-01", 0))
+    with pytest.raises(ValueError, match="At least one monthly return is required"):
+        calculate(empty)

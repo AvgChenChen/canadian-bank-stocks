@@ -23,18 +23,26 @@ def price_returns(frame: pd.DataFrame) -> pd.Series:
     return frame["close"].pct_change().iloc[1:]
 
 
+def _require_returns(returns: pd.Series) -> None:
+    if returns.empty:
+        raise ValueError("At least one monthly return is required")
+
+
 def growth_of(returns: pd.Series, amount: float = 10_000.0) -> pd.Series:
     """Value of `amount` invested at the end of the month before the first return."""
+    _require_returns(returns)
     index = (1 + returns).cumprod() * amount
     start = pd.Series([amount], index=pd.PeriodIndex([returns.index[0] - 1], freq="M"))
     return pd.concat([start, index])
 
 
 def annualised(returns: pd.Series) -> float:
+    _require_returns(returns)
     return float((1 + returns).prod() ** (12 / len(returns)) - 1)
 
 
 def compounded(returns: pd.Series) -> float:
+    _require_returns(returns)
     return float((1 + returns).prod() - 1)
 
 
